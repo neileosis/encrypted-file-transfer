@@ -8,7 +8,7 @@ $ python3 Server.py <port> [secretkey]
 E.g. $ python3 Server.py 4444 password
 
 On the Client side you run the code as follows:
-$ python3 Client.py <command> <filename> <hostname:port> <cipher> [key]
+$ python3 Client.py <command> <filename> <hostname:port> <cipher> [secretkey]
 E.g. $ python3 Client.py write 1MB.bin 136.157.19.23:4444 aes128 pass1234 < 1MB.bin
 E.g. $ python3 Client.py read 1GB.bin 221.119.52.32:4523 aes256 password > 1GB.bin
 
