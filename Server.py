@@ -1,3 +1,9 @@
+'''
+Client program
+
+Written by Neil Hagstrom and Christopher Neave.
+Created for CPSC 526 at the University of Calgary
+'''
 from datetime import datetime
 from random import choice
 from string import digits, ascii_lowercase, ascii_uppercase
@@ -10,6 +16,14 @@ import argparse
 import socket
 import os
 import binascii
+
+#the creation of the initial socket
+def initSocket(port):
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s.bind((socket.gethostname(),port))
+    s.listen(1)
+    return s
+
 
 def dealWithClient(conn, addr, key):
     print(datetime.now(), " Client recived from IP: ", addr[0], " Port: ", addr[1])
@@ -88,13 +102,6 @@ def dealWithClient(conn, addr, key):
             print("\t", datetime.now(), " done")
             conn.close()
             return False
-
-#the creation of the initial socket
-def initSocket(port):
-    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s.bind((socket.gethostname(),port))
-    s.listen(1)
-    return s
 
 def main():
     #Parse all the arguements and make sure all required componenets are there

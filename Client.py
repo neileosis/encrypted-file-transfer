@@ -1,3 +1,9 @@
+'''
+Client program
+
+Written by Neil Hagstrom and Christopher Neave.
+Created for CPSC 526 at the University of Calgary
+'''
 from __future__ import print_function
 from datetime import datetime
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
@@ -24,8 +30,8 @@ def initSocket(hostnamePort):
 def eprint(*args, **kwargs):
     print(*args, file=sys.stderr, **kwargs)
 
-def main():
-    #Set up the required arguements
+def initparse():
+    #Set up the required arguements with a parser
     parser = argparse.ArgumentParser(description = "Client for CPSC526 Assignment 3")
     parser.add_argument("command", type=str, choices=["write","read"],help="Determines if the client will be uploading or downloading to/from the server")
     parser.add_argument("filename", type=str, help="The name of the file to be used by the server application")
@@ -33,26 +39,29 @@ def main():
     parser.add_argument("cipher", type=str, choices=["aes256","aes128","none"], help="The cipher to be used for communicaiton with the server")
     parser.add_argument("key", nargs='?', help="The secret key to be used by the symmetric ciphers")
     args = parser.parse_args()
+    return args
+
+def main():
+    #set up parser
+    args = initparse()
 
     #Make sure all the required arguements are there and are valid
     iv = generateIV()
     if (args.key == None) and not(args.cipher == "none"):
         eprint("A key is required to connect to the server with AES128 and AES256")
         exit(-1)
-
     elif (args.key == None) and (args.cipher == "none"):
         #print("Connecting to the server without any encryption")
         cipher = None
     elif args.cipher == "none":
         eprint("No key is required when connecting with no cipher, exiting")
         exit(-1)
-    #Set up the Ciphers if required
+    #Set up the Ciphers if requested
     else:
         key = args.key
         while(len(key) < 32):
             key += key
         key = key[0:32]
-
         backend = default_backend()
         if(args.cipher == "aes128"):
             cipher = Cipher(algorithms.AES(key[0:16].encode("utf-8")),modes.CBC(iv),backend=backend) #Only want first half of the key
@@ -65,6 +74,7 @@ def main():
     initialString = args.cipher + " " + binascii.hexlify(iv).decode("utf-8")
     soc.send(initialString.encode("utf-8"))
 
+    #Check if you need to decrypt the message
     if(cipher != None):
         try:
             response = EasyCrypto.decryptAndUnpad(cipher,soc.recv(256)).decode("utf-8")	#recieve server response

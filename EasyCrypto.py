@@ -5,6 +5,7 @@ import socket
 import time
 import sys
 
+#encrypt the data using the requested cipher and pad it to length
 def encryptAndPad(cipher, data):
     padder = padding.PKCS7(128).padder()        #Pad the data as needed
     paddedData = padder.update(data) + padder.finalize()
@@ -12,38 +13,18 @@ def encryptAndPad(cipher, data):
             return paddedData
     encryptor = cipher.encryptor()              #Encrypt the data and send
     ct = encryptor.update(paddedData) + encryptor.finalize()
-    #print("\n\n\t Data: ", data)
-    #print("\t paddedData: ", paddedData)
-    #print("\t LPD: ",len(paddedData))
-    #print("\t TPD: ", type(paddedData),'\n\n\n\n')
-    #print("\t CT: ", ct)
     return ct
 
+#decrypt the data using the requested cipher and unpad it
 def decryptAndUnpad(cipher, ct):
     if cipher != None:
         decryptor = cipher.decryptor()
         ct = decryptor.update(ct) + decryptor.finalize()
     unpadder = padding.PKCS7(128).unpadder()
-    #print("\n\n\t CT: ", ct)
-    #print("\t paddedData: ", paddedpt)
-    #print("\t LPD: ",len(paddedpt))
-    #print("\t TPD: ", type(paddedpt),'\n\n\n\n')
     pt = unpadder.update(ct) + unpadder.finalize()
-    #print("\t PT: ", pt)
     return pt
 
-def recieveFileTostdout(conn,cipher):
-    out = sys.stdout
-    while True:
-        FlagAndChunkE = conn.recv(1024,socket.MSG_WAITALL)
-        if FlagAndChunkE != b'':
-                pt = decryptAndUnpad(cipher, FlagAndChunkE)
-                out.buffer.write(pt[1:])
-                out.flush()
-                if pt[0:1] == b'T':
-                    break
-    return True
-
+#receive the file from the connection until it ends
 def recieveFile(conn, cipher, filename):
     file = open(filename,"wb")
     while True:
@@ -57,6 +38,7 @@ def recieveFile(conn, cipher, filename):
     file.close()
     return True
 
+#send the entire file from server to client
 def sendFile(conn, cipher, filename):
     file = open(filename,"rb")
     while True:
@@ -71,6 +53,7 @@ def sendFile(conn, cipher, filename):
     file.close()
     return True
 
+#send the entire file from client to server
 def sendStdIn(conn, cipher, data):
     while True:
         chunk = data.read(1022)                         #One byte for the flag, and one for padding
